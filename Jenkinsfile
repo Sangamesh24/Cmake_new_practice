@@ -132,7 +132,7 @@ pipeline {
                 echo '📊 Running SonarQube (SonarCloud) analysis...'
                 withSonarQubeEnv("${env.SONARQUBE_ENV}") {
                     sh '''
-                        /home/ubuntu/sonar-scanner-7.3.0.5189-linux-x64/bin/sonar-scanner \
+                        /opt/sonar-scanner/bin/sonar-scanner \
                         -Dsonar.organization=${SONAR_ORGANIZATION} \
                         -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
                         -Dsonar.sources=. \

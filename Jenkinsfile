@@ -73,7 +73,7 @@ pipeline {
                 sh '''
                     # Create a Python virtual environment for cmakelint
                     python3 -m venv venv_lint
-                    source venv_lint/bin/activate
+                    . venv_lint/bin/activate
 
                     # Install cmakelint inside the virtualenv
                     pip install --quiet cmakelint

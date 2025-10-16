@@ -19,45 +19,63 @@ pipeline {
         }
 
         stage('Prepare Tools') {
-            steps {
-                echo 'Installing required tools...'
-                sh '''
-                    # Update and install Python3/pip3 if missing
-                    if ! command -v pip3 &>/dev/null; then
-                        sudo yum install -y python3 python3-pip || true
-                    fi
+        steps {
+        echo '🔧 Preparing required tools...'
+        sh '''
+            set -e  # Exit if any command fails
 
-                    # Install cmakelint
-                    pip3 install --quiet cmakelint
+            echo "👉 Checking for Python3 and pip3..."
+            if ! command -v python3 &>/dev/null || ! command -v pip3 &>/dev/null; then
+                echo "⚠️ Python3 or pip3 not found."
+                if [ -w /usr/bin ]; then
+                    echo "Installing Python3 and pip3 (requires privileges)..."
+                    yum install -y python3 python3-pip || true
+                else
+                    echo "❌ Cannot install Python3/pip3 — Jenkins user lacks sudo/root access."
+                    echo "Please install them manually on this agent."
+                fi
+            fi
 
-                    # Install dos2unix
-                    if ! command -v dos2unix &>/dev/null; then
-                        sudo yum install -y dos2unix || true
-                    fi
+            echo "👉 Checking cmakelint..."
+            if ! command -v cmakelint &>/dev/null; then
+                echo "Installing cmakelint..."
+                pip3 install --quiet cmakelint || echo "⚠️ Failed to install cmakelint"
+            fi
 
-                    # Install cmake
-                    if ! command -v cmake &>/dev/null; then
-                        sudo yum install -y epel-release || true
-                        sudo yum install -y cmake || true
-                    fi
-                    
-                    # Install GCC/G++
-                    if ! command -v gcc &>/dev/null; then
-                        sudo yum install -y gcc gcc-c++ || true
-                    fi
+            echo "👉 Checking dos2unix..."
+            if ! command -v dos2unix &>/dev/null; then
+                echo "Attempting to install dos2unix..."
+                yum install -y dos2unix || echo "⚠️ Failed to install dos2unix (no permissions)"
+            fi
 
-                    # Install CTest
-                    if ! command -v ctest &>/dev/null; then
-                        sudo yum install -y cmake || true
-                    fi
+            echo "👉 Checking CMake..."
+            if ! command -v cmake &>/dev/null; then
+                echo "Attempting to install cmake..."
+                yum install -y epel-release || true
+                yum install -y cmake || echo "⚠️ Failed to install cmake (no permissions)"
+            fi
 
-                    # Sonar-Scanner check
-                    if ! command -v sonar-scanner &>/dev/null; then
-                        echo "⚠️  WARNING: Sonar Scanner not found. Configure it in Jenkins Global Tool Configuration."
-                    fi
-                '''
-            }
-        }
+            echo "👉 Checking GCC/G++..."
+            if ! command -v gcc &>/dev/null; then
+                echo "Attempting to install GCC/G++..."
+                yum install -y gcc gcc-c++ || echo "⚠️ Failed to install GCC/G++ (no permissions)"
+            fi
+
+            echo "👉 Checking CTest..."
+            if ! command -v ctest &>/dev/null; then
+                echo "Attempting to install CTest..."
+                yum install -y cmake || echo "⚠️ Failed to install CTest (no permissions)"
+            fi
+
+            echo "👉 Checking Sonar Scanner..."
+            if ! command -v sonar-scanner &>/dev/null; then
+                echo "⚠️ Sonar Scanner not found. Please configure it under Jenkins Global Tool Configuration."
+            fi
+
+            echo "✅ Tool preparation completed."
+        '''
+    }
+}
 
         stage('Checkout') {
             steps {

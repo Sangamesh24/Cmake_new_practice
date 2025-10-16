@@ -19,63 +19,46 @@ pipeline {
         }
 
         stage('Prepare Tools') {
-        steps {
-        echo '🔧 Preparing required tools...'
-        sh '''
-            set -e  # Exit if any command fails
+            steps {
+                echo '🔧 Preparing required tools...'
+                sh '''
+                    set -e  # Exit if any command fails
 
-            echo "👉 Checking for Python3 and pip3..."
-            if ! command -v python3 &>/dev/null || ! command -v pip3 &>/dev/null; then
-                echo "⚠️ Python3 or pip3 not found."
-                if [ -w /usr/bin ]; then
-                    echo "Installing Python3 and pip3 (requires privileges)..."
-                    yum install -y python3 python3-pip || true
-                else
-                    echo "❌ Cannot install Python3/pip3 — Jenkins user lacks sudo/root access."
-                    echo "Please install them manually on this agent."
-                fi
-            fi
+                    echo "👉 Checking for Python3 and pip3..."
+                    if ! command -v python3 &>/dev/null || ! command -v pip3 &>/dev/null; then
+                        echo "⚠️ Python3 or pip3 not found."
+                        echo "❌ Please install them manually on this agent."
+                    fi
 
-            echo "👉 Checking cmakelint..."
-            if ! command -v cmakelint &>/dev/null; then
-                echo "Installing cmakelint..."
-                pip3 install --quiet cmakelint || echo "⚠️ Failed to install cmakelint"
-            fi
+                    echo "👉 Checking dos2unix..."
+                    if ! command -v dos2unix &>/dev/null; then
+                        echo "⚠️ dos2unix not found. Install manually if required."
+                    fi
 
-            echo "👉 Checking dos2unix..."
-            if ! command -v dos2unix &>/dev/null; then
-                echo "Attempting to install dos2unix..."
-                yum install -y dos2unix || echo "⚠️ Failed to install dos2unix (no permissions)"
-            fi
+                    echo "👉 Checking CMake..."
+                    if ! command -v cmake &>/dev/null; then
+                        echo "⚠️ cmake not found. Install manually if required."
+                    fi
 
-            echo "👉 Checking CMake..."
-            if ! command -v cmake &>/dev/null; then
-                echo "Attempting to install cmake..."
-                yum install -y epel-release || true
-                yum install -y cmake || echo "⚠️ Failed to install cmake (no permissions)"
-            fi
+                    echo "👉 Checking GCC/G++..."
+                    if ! command -v gcc &>/dev/null; then
+                        echo "⚠️ gcc/g++ not found. Install manually if required."
+                    fi
 
-            echo "👉 Checking GCC/G++..."
-            if ! command -v gcc &>/dev/null; then
-                echo "Attempting to install GCC/G++..."
-                yum install -y gcc gcc-c++ || echo "⚠️ Failed to install GCC/G++ (no permissions)"
-            fi
+                    echo "👉 Checking CTest..."
+                    if ! command -v ctest &>/dev/null; then
+                        echo "⚠️ ctest not found. Install manually if required."
+                    fi
 
-            echo "👉 Checking CTest..."
-            if ! command -v ctest &>/dev/null; then
-                echo "Attempting to install CTest..."
-                yum install -y cmake || echo "⚠️ Failed to install CTest (no permissions)"
-            fi
+                    echo "👉 Checking Sonar Scanner..."
+                    if ! command -v sonar-scanner &>/dev/null; then
+                        echo "⚠️ Sonar Scanner not found. Configure in Jenkins Global Tool Configuration."
+                    fi
 
-            echo "👉 Checking Sonar Scanner..."
-            if ! command -v sonar-scanner &>/dev/null; then
-                echo "⚠️ Sonar Scanner not found. Please configure it under Jenkins Global Tool Configuration."
-            fi
-
-            echo "✅ Tool preparation completed."
-        '''
-    }
-}
+                    echo "✅ Tool preparation completed."
+                '''
+            }
+        }
 
         stage('Checkout') {
             steps {
@@ -88,12 +71,24 @@ pipeline {
             steps {
                 echo '🔍 Running lint checks on src/main.c...'
                 sh '''
+                    # Create a Python virtual environment for cmakelint
+                    python3 -m venv venv_lint
+                    source venv_lint/bin/activate
+
+                    # Install cmakelint inside the virtualenv
+                    pip install --quiet cmakelint
+
+                    # Run cmakelint if file exists
                     if [ -f src/main.c ]; then
                         cmakelint src/main.c > lint_report.txt
+                        echo "✅ Lint completed. Report saved to lint_report.txt"
                     else
                         echo "❌ src/main.c not found!"
                         exit 1
                     fi
+
+                    # Deactivate virtualenv
+                    deactivate
                 '''
             }
             post {
@@ -106,7 +101,7 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo '🏗️  Running CMake build configuration and compilation...'
+                echo '🏗️ Running CMake build configuration and compilation...'
                 sh '''
                     rm -rf build && mkdir build
                     cd build
@@ -125,7 +120,7 @@ pipeline {
                         cd build
                         ctest --output-on-failure
                     else
-                        echo "⚠️  Build directory not found! Skipping tests."
+                        echo "⚠️ Build directory not found! Skipping tests."
                         exit 1
                     fi
                 '''

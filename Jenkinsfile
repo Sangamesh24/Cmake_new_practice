@@ -18,18 +18,28 @@ pipeline {
             }
         }
 
-        stage('Prepare Tools') {
+        stage('Checkout') {
             steps {
-                echo '🔧 Preparing required tools...'
+                echo "📥 Cloning repository ${env.GIT_REPO} on branch ${env.BRANCH}..."
+                git url: env.GIT_REPO, branch: env.BRANCH, credentialsId: 'github_pat'
+            }
+        }
+
+        stage('Prepare Tools & Lint Environment') {
+            steps {
+                echo '🔧 Preparing tools and Python virtual environment...'
                 sh '''
                     set -e
-
                     # Check Python3 and pip3
                     command -v python3 >/dev/null 2>&1 || { echo "❌ python3 not found"; exit 1; }
                     command -v pip3 >/dev/null 2>&1 || { echo "❌ pip3 not found"; exit 1; }
 
-                    # Create Python virtual environment for linting
-                    python3 -m venv venv_lint
+                    # Create Python virtual environment if it does not exist
+                    if [ ! -d venv_lint ]; then
+                        python3 -m venv venv_lint
+                    fi
+
+                    # Activate venv
                     . venv_lint/bin/activate
 
                     # Upgrade pip inside venv
@@ -44,15 +54,8 @@ pipeline {
                     command -v g++ >/dev/null || { echo "❌ g++ not found"; exit 1; }
                     command -v ctest >/dev/null || { echo "❌ ctest not found"; exit 1; }
 
-                    echo "✅ Tools ready."
+                    echo "✅ Tools and lint environment ready."
                 '''
-            }
-        }
-
-        stage('Checkout') {
-            steps {
-                echo "📥 Cloning repository ${env.GIT_REPO} on branch ${env.BRANCH}..."
-                git url: env.GIT_REPO, branch: env.BRANCH, credentialsId: 'github_pat'
             }
         }
 
@@ -60,7 +63,13 @@ pipeline {
             steps {
                 echo '🔍 Running cmakelint on src/main.c...'
                 sh '''
+                    if [ ! -d venv_lint ]; then
+                        echo "❌ venv_lint not found! Prepare Tools stage failed."
+                        exit 1
+                    fi
+
                     . venv_lint/bin/activate
+
                     if [ -f src/main.c ]; then
                         cmakelint src/main.c > lint_report.txt
                         echo "✅ Lint completed. Report saved to lint_report.txt"
@@ -130,7 +139,7 @@ pipeline {
             echo '🏁 Pipeline finished.'
         }
         success {
-            echo '✅ Lint, Build, Unit Test, and SonarQube Analysis completed successfully!'
+            echo '✅ Pipeline completed successfully!'
         }
         failure {
             echo '❌ Pipeline failed. Check logs for details.'

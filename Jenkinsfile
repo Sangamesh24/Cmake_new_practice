@@ -136,8 +136,8 @@ pipeline {
                         -Dsonar.organization=${SONAR_ORGANIZATION} \
                         -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
                         -Dsonar.sources=. \
-                        -Dsonar.cfamily.compile-commands=build/compile_commands.json \
-                        -Dsonar.sourceEncoding=UTF-8
+                         -Dsonar.host.url=http://http://54.197.149.78:9000 \
+                          -Dsonar.token=squ_f7d5910df8fb5965a8839113f47104aa9e6fc7a7
                     '''
                 }
             }

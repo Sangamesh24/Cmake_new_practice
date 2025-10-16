@@ -135,7 +135,7 @@ pipeline {
                         sonar-scanner \
                         -Dsonar.organization=${SONAR_ORGANIZATION} \
                         -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                        -Dsonar.sources=src \
+                        -Dsonar.sources=. \
                         -Dsonar.cfamily.compile-commands=build/compile_commands.json \
                         -Dsonar.sourceEncoding=UTF-8
                     '''

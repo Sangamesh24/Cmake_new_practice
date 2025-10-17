@@ -112,28 +112,31 @@ pipeline {
                 '''
             }
         }
+stage('SonarQube Analysis') {
+    steps {
+        echo "📊 Running SonarQube analysis..."
+        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+            withSonarQubeEnv('Sonar_qube_cloud') {
+                sh '''
+                    echo "🔍 Checking compile_commands.json existence..."
+                    ls -l build/compile_commands.json || { echo "❌ compile_commands.json not found!"; exit 1; }
 
-        stage('SonarQube Analysis') {
-            steps {
-                echo '📊 Running SonarQube analysis...'
-                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                    withSonarQubeEnv("${env.SONARQUBE_ENV}") {
-                        sh '''
-                            /opt/sonar-scanner/bin/sonar-scanner \
-                                -Dsonar.organization=${SONAR_ORGANIZATION} \
-                                -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                                -Dsonar.sources=src/main.c \
-                                -Dsonar.host.url=http://3.84.243.53:9000 \
-                                -Dsonar.token=${SONAR_TOKEN} \
-                                -Dsonar.cfamily.compile-commands=build/compile_commands.json \
-                                -Dsonar.sourceEncoding=UTF-8
-                        '''
-                    }
-                }
+                    echo "🚀 Starting sonar-scanner..."
+                    /opt/sonar-scanner/bin/sonar-scanner \
+                        -Dsonar.projectKey=sonarqube_test \
+                        -Dsonar.sources=src \
+                        -Dsonar.cfamily.compile-commands=build/compile_commands.json \
+                        -Dsonar.host.url=http://3.84.243.53:9000 \
+                        -Dsonar.token=$SONAR_TOKEN \
+                        -Dsonar.sourceEncoding=UTF-8 \
+                        -X
+                '''
             }
         }
     }
+}
 
+     
     post {
         always {
             echo '🏁 Pipeline finished.'

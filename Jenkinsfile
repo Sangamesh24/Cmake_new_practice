@@ -135,6 +135,7 @@ stage('SonarQube Analysis') {
         }
     }
 }
+}
 
      
     post {

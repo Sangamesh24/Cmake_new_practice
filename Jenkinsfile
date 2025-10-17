@@ -124,7 +124,7 @@ stage('SonarQube Analysis') {
                     echo "🚀 Starting sonar-scanner..."
                     /opt/sonar-scanner/bin/sonar-scanner \
                         -Dsonar.projectKey=sonarqube_test \
-                        -Dsonar.sources=src \
+                        -Dsonar.sources=. \
                         -Dsonar.cfamily.compile-commands=build/compile_commands.json \
                         -Dsonar.host.url=http://3.84.243.53:9000 \
                         -Dsonar.token=$SONAR_TOKEN \

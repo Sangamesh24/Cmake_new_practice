@@ -123,7 +123,7 @@ pipeline {
                                 -Dsonar.organization=${SONAR_ORGANIZATION} \
                                 -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
                                 -Dsonar.sources=src \
-                                -Dsonar.host.url=http://54.197.149.78:9000 \
+                                -Dsonar.host.url=http://3.84.243.53:9000 \
                                 -Dsonar.token=${SONAR_TOKEN} \
                                 -Dsonar.cfamily.compile-commands=build/compile_commands.json \
                                 -Dsonar.sourceEncoding=UTF-8

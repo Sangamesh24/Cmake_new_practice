@@ -129,6 +129,7 @@ stage('SonarQube Analysis') {
                         -Dsonar.host.url=http://3.84.243.53:9000 \
                         -Dsonar.token=$SONAR_TOKEN \
                         -Dsonar.sourceEncoding=UTF-8 \
+                        -Dsonar.scanner.skipSystemTruststore=true \
                         -X
                 '''
             }

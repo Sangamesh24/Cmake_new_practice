@@ -30,25 +30,17 @@ pipeline {
                 echo '🔧 Preparing tools and Python virtual environment...'
                 sh '''
                     set -e
-                    # Check Python3 and pip3
                     command -v python3 >/dev/null 2>&1 || { echo "❌ python3 not found"; exit 1; }
                     command -v pip3 >/dev/null 2>&1 || { echo "❌ pip3 not found"; exit 1; }
 
-                    # Create Python virtual environment if it does not exist
                     if [ ! -d venv_lint ]; then
                         python3 -m venv venv_lint
                     fi
 
-                    # Activate venv
                     . venv_lint/bin/activate
-
-                    # Upgrade pip inside venv
                     pip install --quiet --upgrade pip
-
-                    # Install cmakelint in venv
                     pip install --quiet cmakelint || { echo "⚠️ Failed to install cmakelint"; exit 1; }
 
-                    # Check CMake, GCC, g++, and CTest
                     command -v cmake >/dev/null || { echo "❌ cmake not found"; exit 1; }
                     command -v gcc >/dev/null || { echo "❌ gcc not found"; exit 1; }
                     command -v g++ >/dev/null || { echo "❌ g++ not found"; exit 1; }
@@ -112,33 +104,37 @@ pipeline {
                 '''
             }
         }
-stage('SonarQube Analysis') {
-    steps {
-        echo "📊 Running SonarQube analysis..."
-        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-            withSonarQubeEnv('Sonar_qube_cloud') {
-                sh '''
-                    echo "🔍 Checking compile_commands.json existence..."
-                    ls -l build/compile_commands.json || { echo "❌ compile_commands.json not found!"; exit 1; }
 
-                    echo "🚀 Starting sonar-scanner..."
-                    /opt/sonar-scanner/bin/sonar-scanner \
-                        -Dsonar.projectKey=sonarqube_test \
-                        -Dsonar.sources=. \
-                        -Dsonar.cfamily.compile-commands=build/compile_commands.json \
-                        -Dsonar.host.url=http://3.84.243.53:9000 \
-                        -Dsonar.token=$SONAR_TOKEN \
-                        -Dsonar.sourceEncoding=UTF-8 \
-                        -Dsonar.scanner.skipSystemTruststore=true \
-                        -X
-                '''
+        stage('SonarQube Analysis') {
+            steps {
+                echo "📊 Running SonarQube analysis..."
+                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                    withSonarQubeEnv('Sonar_qube_cloud') {
+                        sh '''
+                            echo "🔍 Checking compile_commands.json existence..."
+                            ls -l build/compile_commands.json || { echo "❌ compile_commands.json not found!"; exit 1; }
+
+                            echo "🚀 Starting sonar-scanner with extended timeout and memory..."
+                            export SONAR_SCANNER_OPTS="-Xmx2048m -Dhttp.timeout=600000"
+                            /opt/sonar-scanner/bin/sonar-scanner \
+                                -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                                -Dsonar.sources=. \
+                                -Dsonar.cfamily.compile-commands=build/compile_commands.json \
+                                -Dsonar.exclusions=**/venv_lint/**,**/.scannerwork/**,**/tests/**,**/*.log \
+                                -Dsonar.host.url=http://3.84.243.53:9000 \
+                                -Dsonar.token=${SONAR_TOKEN} \
+                                -Dsonar.sourceEncoding=UTF-8 \
+                                -Dsonar.ws.timeout=600 \
+                                -Dsonar.cfamily.cache.enabled=false \
+                                -Dsonar.scanner.skipSystemTruststore=true \
+                                -X
+                        '''
+                    }
+                }
             }
         }
     }
-}
-}
 
-     
     post {
         always {
             echo '🏁 Pipeline finished.'

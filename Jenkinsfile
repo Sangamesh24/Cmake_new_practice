@@ -107,34 +107,19 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                echo " Running SonarQube analysis..."
-                withCredentials([string(credentialsId: 'Sonarqube_configuration_jenkins', variable: 'SONAR_TOKEN')]) {
-                    withSonarQubeEnv('Sonar_qube_cloud') {
-                        sh '''
-                            echo " Checking compile_commands.json existence..."
-                            ls -l build/compile_commands.json || { echo " compile_commands.json not found!"; exit 1; }
-
-                            echo " Starting sonar-scanner with extended timeout and memory..."
-                            export SONAR_SCANNER_OPTS="-Xmx2048m -Dhttp.timeout=600000"
-                            /opt/sonar-scanner/bin/sonar-scanner \
-                                -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                                -Dsonar.sources=. \
-                                -Dsonar.cfamily.compile-commands=build/compile_commands.json \
-                                -Dsonar.exclusions=**/venv_lint/**,**/.scannerwork/**,**/tests/**,**/*.log \
-                                -Dsonar.host.url=https://sonarcloud.io \
-                                -Dsonar.token=${SONAR_TOKEN} \
-                                -Dsonar.sourceEncoding=UTF-8 \
-                                -Dsonar.ws.timeout=600 \
-                                -Dsonar.cfamily.cache.enabled=false \
-                                -Dsonar.scanner.skipSystemTruststore=true \
-                                -X
-                        '''
+                echo 'Running SonarQube analysis...'
+                withSonarQubeEnv("${SONARQUBE_ENV}") {
+                    sh '''
+                       /opt/sonar-scanner/bin/sonar-scanner \
+                          -Dsonar.projectKey=Sangamesh24_Cmake_new_practice \
+                          -Dsonar.sources=. \
+                          -Dsonar.host.url=https://sonarcloud.io/ \
+                          -Dsonar.token=5227c860eb06d3fc4be6680f58cb3eeeba3259c9
+                    '''
                     }
                 }
             }
-        }
-    }
-
+    
     post {
         always {
             echo '🏁 Pipeline finished.'

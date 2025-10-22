@@ -116,6 +116,9 @@ pipeline {
                     -Dsonar.sources=. \
                     -Dsonar.host.url=https://sonarcloud.io \
                     -Dsonar.login=5227c860eb06d3fc4be6680f58cb3eeeba3259c9
+                    -Dsonar.c.file.suffixes=- \
+                    -Dsonar.cpp.file.suffixes=- \
+                    -Dsonar.objc.file.suffixes=-
             '''
         }
     }

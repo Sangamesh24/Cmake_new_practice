@@ -5,7 +5,7 @@ pipeline {
         GIT_REPO = 'https://github.com/Sangamesh24/Cmake_new_practice.git'
         BRANCH = 'main'
         SONARQUBE_ENV = 'Sonar_qube_cloud'
-        SONAR_ORGANIZATION = 'admin'
+        SONAR_ORGANIZATION = 'sangamesh24'
         SONAR_PROJECT_KEY = 'Sangamesh24_Cmake_new_practice'
     }
 
@@ -106,20 +106,21 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            steps {
-                echo 'Running SonarQube analysis...'
-                withSonarQubeEnv("${SONARQUBE_ENV}") {
-                    sh '''
-                        /opt/sonar-scanner/bin/sonar-scanner \
-                            -Dsonar.projectKey=Sangamesh24_Cmake_new_practice \
-                            -Dsonar.sources=. \
-                            -Dsonar.host.url=https://sonarcloud.io \
-                            -Dsonar.login=5227c860eb06d3fc4be6680f58cb3eeeba3259c9
-                            -Dsonar.organization=Sangamesh24_Cmake_new_practice
-                    '''
-                }
-            }
+    steps {
+        echo 'Running SonarQube analysis...'
+        withSonarQubeEnv("${SONARQUBE_ENV}") {
+            sh '''
+                /opt/sonar-scanner/bin/sonar-scanner \
+                    -Dsonar.projectKey=Sangamesh24_Cmake_new_practice \
+                    -Dsonar.organization=sangamesh24 \
+                    -Dsonar.sources=. \
+                    -Dsonar.host.url=https://sonarcloud.io \
+                    -Dsonar.login=5227c860eb06d3fc4be6680f58cb3eeeba3259c9
+            '''
         }
+    }
+}
+
     }
 
     post {

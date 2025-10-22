@@ -115,7 +115,7 @@ pipeline {
                             -Dsonar.sources=. \
                             -Dsonar.host.url=https://sonarcloud.io \
                             -Dsonar.login=5227c860eb06d3fc4be6680f58cb3eeeba3259c9
-                            -Dsonar.organization=sangamesh24
+                            -Dsonar.organization=Sangamesh24_Cmake_new_practice
                     '''
                 }
             }

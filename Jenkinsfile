@@ -5,7 +5,7 @@ pipeline {
         GIT_REPO = 'https://github.com/Sangamesh24/Cmake_new_practice.git'
         BRANCH = 'main'
         SONARQUBE_ENV = 'Sonar_qube_cloud'
-        SONAR_ORGANIZATION = 'sangamesh24'
+        SONAR_ORGANIZATION = 'admin'
         SONAR_PROJECT_KEY = 'Sangamesh24_Cmake_new_practice'
     }
 

@@ -108,7 +108,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 echo " Running SonarQube analysis..."
-                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                withCredentials([string(credentialsId: 'Sonarqube_configuration_jenkins', variable: 'SONAR_TOKEN')]) {
                     withSonarQubeEnv('Sonar_qube_cloud') {
                         sh '''
                             echo " Checking compile_commands.json existence..."

@@ -110,11 +110,11 @@ pipeline {
                 echo 'Running SonarQube analysis...'
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
                     sh '''
-                        sonar-scanner/ \
+                        /opt/sonar-scanner/bin/sonar-scanner/ \
                             -Dsonar.projectKey=Sangamesh24_Cmake_new_practice \
                             -Dsonar.sources=. \
-                            -Dsonar.host.url=https://sonarcloud.io/ \
-                            -Dsonar.token=5227c860eb06d3fc4be6680f58cb3eeeba3259c9
+                            -Dsonar.host.url=https://sonarcloud.io \
+                            -Dsonar.login=5227c860eb06d3fc4be6680f58cb3eeeba3259c9
                     '''
                 }
             }
